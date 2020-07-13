@@ -11,7 +11,7 @@ type MainProps = {
   //
 };
 
-class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth: number, possibleValues: Array<string>, numberOfThreads: number, timeOut: number }> {
+class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth: number, possibleValues: Array<string>, numberOfThreads: number, timeOut: number, status: string }> {
 
   constructor(props: MainProps) {
     super(props);
@@ -23,7 +23,8 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       boardWidth: defaultWidth,
       possibleValues: defaultPossibleValues,
       numberOfThreads: 1,
-      timeOut: 30
+      timeOut: 30,
+      status: ''
     }
     // setters
     this.setBoard = this.setBoard.bind(this);
@@ -71,8 +72,12 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
         Timeout Seconds <input type="number" value={this.state.timeOut} onChange={this.handleTimeoutChange}></input>
         <SudokuOptions possbileValues={this.state.possibleValues} handlePossbileValueChange={this.handlePossibleValueChange}></SudokuOptions>
       </div>
-      <button onClick={this.handleClear}>Clear</button>
-      <button onClick={this.handleSolve}>Solve</button>
+      <div>
+
+        <button onClick={this.handleClear}>Clear</button>
+        <button onClick={this.handleSolve}>Solve</button>
+        <div>Status: {this.state.status}</div>
+      </div>
       {/* <button onClick={this.debug}>Debug</button> */}
     </div>;
   }
@@ -102,6 +107,10 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
 
   public setPossibleValues(newPossibleValues: Array<string>) {
     this.setState({ possibleValues: newPossibleValues });
+  }
+
+  public setStatus(newStatus: string) {
+    this.setState({ status: newStatus })
   }
 
   public createEmptyBoard(n: number) {
@@ -192,6 +201,7 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
   async sendSolveBoard(requestObj: ISudokuSolveRequest) {
     console.log('sending solve request with the following data');
     console.log(requestObj);
+
     const proxyurl = "https://cors-anywhere.herokuapp.com/";
     const url = "https://ohq0hxesze.execute-api.us-east-2.amazonaws.com/default/Sudoku-Solver"; // site that doesn’t send Access-Control-*
 
@@ -203,8 +213,14 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       body: JSON.stringify(requestObj),
     }).then(response => response.json())
       .catch(() => console.log("Can’t access " + url + " response. Blocked by browser?"))
-    const solution: ISudokuSolveResponse = JSON.parse(response);
-    this.setBoard(solution.rows);
+    if (response.errorMessage) {
+      this.setStatus(response.errorMessage);
+      console.log(response.errorMessage);
+    } else {
+      const solution: ISudokuSolveResponse = JSON.parse(response);
+      this.setBoard(solution.rows);
+      this.setStatus('Succesfully Solved!');
+    }
   }
 }
 
