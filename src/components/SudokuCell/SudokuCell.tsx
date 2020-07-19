@@ -14,7 +14,7 @@ class SudokuCell extends Component<SudokuCellProps, any> {
   }
 
   public render() {
-    return <div><input type="text" pattern="[0-9]*" value={this.props.value} onChange={this.handleChange}></input></div>;
+    return <div><input type="text" value={this.props.value} onChange={this.handleChange}></input></div>;
   }
   public handleChange(event: any) {
     this.props.handleChange(this.props.x, this.props.y, event.target.value);
