@@ -62,7 +62,7 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       <div >
         <h2>Board Information</h2>
         <div>
-          Board Width <input type="number" value={this.state.boardWidth} onChange={this.handleWidthChange}></input>
+          Board Width <input type="number" pattern="[0-9]*" value={this.state.boardWidth} onChange={this.handleWidthChange}></input>
         </div>
       </div>
 
@@ -71,8 +71,8 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       </div>
       <div>
         <h2>Solver Configuration</h2>
-        <div>Number of Threads <input type="number" value={this.state.numberOfThreads} onChange={this.handleNumberOfThreadsChange}></input></div>
-        <div>Timeout Seconds <input type="number" value={this.state.timeOut} onChange={this.handleTimeoutChange}></input></div>
+        <div>Number of Threads <input type="number" pattern="[0-9]*" value={this.state.numberOfThreads} onChange={this.handleNumberOfThreadsChange}></input></div>
+        <div>Timeout Seconds <input type="number" pattern="[0-9]*" value={this.state.timeOut} onChange={this.handleTimeoutChange}></input></div>
         <SudokuOptions possbileValues={this.state.possibleValues} handlePossbileValueChange={this.handlePossibleValueChange}></SudokuOptions>
       </div>
       <div>
