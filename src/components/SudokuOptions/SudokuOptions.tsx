@@ -10,11 +10,17 @@ type SudokuOptionsProps = {
 class SudokuOptions extends Component<SudokuOptionsProps, any> {
   public render() {
     const possibleValues = this.props.possbileValues.map((possibleValue, i) => {
-      return <SudokuPossbileValue key={'possbileVal' + i} value={possibleValue} index={i} handlePossbileValueChange={this.props.handlePossbileValueChange}></SudokuPossbileValue>
+      return <td className="td" key={'possbileVal' + i}><SudokuPossbileValue value={possibleValue} index={i} handlePossbileValueChange={this.props.handlePossbileValueChange}></SudokuPossbileValue></td>
     })
-    return <div>
+    return <div >
       <p>Possbile Cell Values</p>
-      {possibleValues}
+      <table className="table">
+        <tbody>
+          <tr >
+            {possibleValues}
+          </tr>
+        </tbody>
+      </table>
     </div>;
   }
 
