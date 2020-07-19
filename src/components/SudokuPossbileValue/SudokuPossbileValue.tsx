@@ -15,7 +15,7 @@ class SudokuPossbileValue extends Component<SudokuPossbileValueProps, any> {
   public render() {
 
     return <div>
-      <input type="text" pattern="[0-9]*" value={this.props.value} onChange={this.handleChange} ></input>
+      <input type="text" value={this.props.value} onChange={this.handleChange} ></input>
     </div>;
   }
   public handleChange(event: React.ChangeEvent<HTMLInputElement>) {
