@@ -11,6 +11,8 @@ type MainProps = {
   //
 };
 
+const maxTimeOut = 10;
+
 class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth: number, possibleValues: Array<string>, numberOfThreads: number, timeOut: number, status: string }> {
 
   constructor(props: MainProps) {
@@ -23,8 +25,8 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       boardWidth: defaultWidth,
       possibleValues: defaultPossibleValues,
       numberOfThreads: 1,
-      timeOut: 10,
-      status: ''
+      timeOut: 3,
+      status: 'Click Solve'
     }
     // setters
     this.setBoard = this.setBoard.bind(this);
@@ -50,11 +52,6 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
 
     // utils
     this.sendSolveBoard = this.sendSolveBoard.bind(this);
-
-    // debug
-    this.debug = this.debug.bind(this);
-
-
   }
   public render() {
 
@@ -65,9 +62,11 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
           Board Width <input type="number" pattern="[0-9]*" value={this.state.boardWidth} onChange={this.handleWidthChange}></input>
         </div>
       </div>
-
       <div>
         <SudokuBoard rows={this.state.rows} boardWidth={this.state.boardWidth} handleChange={this.handleDataChange}></SudokuBoard>
+      </div>
+      <div>
+        <div>Solve Status: {this.state.status}</div>
       </div>
       <div>
         <h2>Solver Configuration</h2>
@@ -78,9 +77,7 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
       <div>
         <button onClick={this.handleClear}>Clear</button>
         <button onClick={this.handleSolve}>Solve</button>
-        <div>Status: {this.state.status}</div>
       </div>
-      {/* <button onClick={this.debug}>Debug</button> */}
     </div>;
   }
   public handleWidthChange(event: ChangeEvent<HTMLInputElement>) {
@@ -137,24 +134,31 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
   public handleDataChange(i: number, j: number, val: string) {
     const cloned = this.cloneRows();
     cloned[i][j] = val.repeat(1);
-    console.log('changed <' + i + ',' + j + '> to ' + val);
     this.setBoard(cloned);
   }
 
   public handlePossibleValueChange(i: number, val: string) {
     const cloned = this.clonePossibleValues();
     cloned[i] = val.repeat(1);
-    console.log('changed ' + i + ' to ' + val);
     this.setPossibleValues(cloned);
   }
   public handleTimeoutChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newVal = parseInt(event.target.value);
+    let newVal = parseInt(event.target.value);
+    // max time out
+    if (newVal > maxTimeOut) {
+      newVal = maxTimeOut;
+    }
     this.setState({
       timeOut: newVal
     })
   }
   public handleNumberOfThreadsChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newVal = parseInt(event.target.value);
+    let newVal = parseInt(event.target.value);
+    const maxThreadCount = this.state.boardWidth * this.state.boardWidth;
+    // max thread
+    if (newVal > maxThreadCount) {
+      newVal = maxThreadCount;
+    }
     this.setState({
       numberOfThreads: newVal
     })
@@ -194,15 +198,11 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
     }
     return rows;
   }
-  public debug() {
-    console.log('debugging');
-
-    console.log(this.state);
-  }
 
   async sendSolveBoard(requestObj: ISudokuSolveRequest) {
     console.log('sending solve request with the following data');
     console.log(requestObj);
+    this.setStatus('Solving...');
 
     const proxyurl = "https://cors-anywhere.herokuapp.com/";
     const url = "https://ohq0hxesze.execute-api.us-east-2.amazonaws.com/default/Sudoku-Solver"; // site that doesn’t send Access-Control-*
@@ -221,7 +221,17 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
     } else {
       const solution: ISudokuSolveResponse = JSON.parse(response);
       this.setBoard(solution.rows);
-      this.setStatus('Succesfully Solved!');
+      const indexOfIncompleteRow = solution.rows.findIndex((row) => {
+        const index = row.findIndex((value) => {
+          return (value === '');
+        });
+        return (index !== -1);
+      })
+      if (indexOfIncompleteRow === -1) {
+        this.setStatus('Succesfully Solved!');
+      } else {
+        this.setStatus('Could not solve.');
+      }
     }
   }
 }
