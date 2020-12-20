@@ -200,40 +200,46 @@ class Main extends Component<MainProps, { rows: Array<Array<string>>, boardWidth
   }
 
   async sendSolveBoard(requestObj: ISudokuSolveRequest) {
+    // convert request into string
     console.log('sending solve request with the following data');
     console.log(requestObj);
+    const requestObjAsStr = JSON.stringify(requestObj);
+    console.log(requestObjAsStr);
+
+    // update front-end
     this.setStatus('Solving...');
+    const url = "https://vbwygvjt5l.execute-api.us-east-2.amazonaws.com/default/solve";
 
-    const proxyurl = "https://cors-anywhere.herokuapp.com/";
-    const url = "https://ohq0hxesze.execute-api.us-east-2.amazonaws.com/default/Sudoku-Solver"; // site that doesn’t send Access-Control-*
-
-    const response = await fetch(proxyurl + url, {
-      method: 'POST', // or 'PUT'
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    // call request
+    const response = await fetch(url, {
+      method: 'POST',
       body: JSON.stringify(requestObj),
     }).then(response => response.json())
-      .catch(() => console.log("Can’t access " + url + " response. Blocked by browser?"))
-    if (response.errorMessage) {
-      this.setStatus(response.errorMessage);
-      console.log(response.errorMessage);
-    } else {
-      const solution: ISudokuSolveResponse = JSON.parse(response);
+      .catch(() => console.log("Can’t access " + url + " response. Blocked by browser?"));
+
+    // handle response
+    if (response) {
+      // log sucess
+      console.log('received response')
+      console.log(response)
+
+      // update board state
+      const solution: ISudokuSolveResponse = response;
       this.setBoard(solution.rows);
-      const indexOfIncompleteRow = solution.rows.findIndex((row) => {
-        const index = row.findIndex((value) => {
-          return (value === '');
-        });
-        return (index !== -1);
-      })
-      if (indexOfIncompleteRow === -1) {
+
+      // update status
+      if (solution.solved) {
         this.setStatus('Succesfully Solved!');
       } else {
         this.setStatus('Could not solve.');
       }
+    } else {
+      // log error message
+      console.log(response);
+      this.setStatus(response);
     }
   }
+
 }
 
 export default Main;
